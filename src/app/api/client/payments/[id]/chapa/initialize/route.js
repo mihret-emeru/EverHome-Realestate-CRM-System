@@ -178,7 +178,7 @@ export async function POST(request, { params }) {
     // ==========================================
 
     const baseUrl = (
-      process.env.NEXTAUTH_URL || "http://localhost:3000"
+      process.env.NEXTAUTH_URL || "https://everhomerealestate.vercel.app/api/webhooks/chapa"
     ).replace(/\/$/, "");
 
     const callbackUrl = `${baseUrl}/api/webhooks/chapa`;
