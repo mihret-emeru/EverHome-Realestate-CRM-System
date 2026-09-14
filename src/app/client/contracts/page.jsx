@@ -39,6 +39,7 @@ export default function ClientContractsPage() {
     <div className="client-contracts-page">
       <div className="contracts-header">
         <div>
+          <span>DOCUMENTS</span>
           <h1>My Contracts</h1>
 
           <p>

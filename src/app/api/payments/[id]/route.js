@@ -5,6 +5,8 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Payment from "@/models/Payment";
 
+import { createNotification } from "@/utils/createNotification";
+
 export async function GET(request, { params }) {
   try {
     await connectDB();
@@ -165,6 +167,49 @@ export async function PUT(request, { params }) {
     }
 
     await payment.save();
+
+    // ==========================================
+    // Notify client about payment verification
+    // ==========================================
+
+    let notificationTitle = "";
+    let notificationMessage = "";
+
+    if (status === "paid") {
+      notificationTitle = "Payment Approved";
+
+      notificationMessage = `Your payment for installment #${payment.installmentNumber}
+   has been approved successfully.`;
+    }
+
+    if (status === "rejected") {
+      notificationTitle = "Payment Rejected";
+
+      notificationMessage = `Your payment for installment #${payment.installmentNumber}
+   has been rejected. Please review the verification note and submit a new payment if required.`;
+    }
+
+    if (status === "review_required") {
+      notificationTitle = "Payment Requires Review";
+
+      notificationMessage = `Your payment for installment #${payment.installmentNumber} 
+  requires additional verification.`;
+    }
+
+    await createNotification({
+      recipient: payment.client,
+      type: `payment_${status}`,
+      title: notificationTitle,
+      message: notificationMessage,
+      link: `/client/payments/${payment._id}`,
+      metadata: {
+        paymentId: payment._id,
+        propertyId: payment.property,
+        installmentNumber: payment.installmentNumber,
+        status,
+        verificationNotes: payment.verificationNotes || "",
+      },
+    });
 
     return NextResponse.json({
       success: true,

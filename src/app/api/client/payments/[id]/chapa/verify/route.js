@@ -152,7 +152,19 @@ export async function GET(request, { params }) {
 
     const chapaData = await response.json();
 
-    console.log("CHAPA VERIFY RESPONSE:", JSON.stringify(chapaData, null, 2));
+    console.log("==========================================");
+    console.log("CHAPA VERIFY RESPONSE");
+    console.log("Transaction Reference:", txRef);
+    console.log("HTTP Status:", response.status);
+    console.log("HTTP OK:", response.ok);
+    console.log("Chapa status:", chapaData?.status);
+    console.log("Chapa message:", chapaData?.message);
+    console.log("Transaction status:", chapaData?.data?.status);
+    console.log("Transaction reference:", chapaData?.data?.tx_ref);
+    console.log("Transaction amount:", chapaData?.data?.amount);
+    console.log("Transaction currency:", chapaData?.data?.currency);
+    console.log("Full Chapa response:", JSON.stringify(chapaData, null, 2));
+    console.log("==========================================");
 
     // ==========================================
     // CHAPA API ERROR

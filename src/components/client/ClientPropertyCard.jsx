@@ -1,7 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FaBed, FaBath, FaRulerCombined, FaHeart } from "react-icons/fa";
+
+import {
+  FaBed,
+  FaBath,
+  FaRulerCombined,
+  FaHeart,
+  FaComments,
+} from "react-icons/fa";
 
 export default function ClientPropertyCard({
   property,
@@ -18,8 +25,54 @@ export default function ClientPropertyCard({
 
   const status = property.status || "available";
 
+  // ============================================================
+  // MESSAGE AGENT
+  // ============================================================
+
+  async function handleMessageAgent() {
+    if (!property.assignedAgent) {
+      return;
+    }
+
+    try {
+      const response = await fetch("/api/client/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          propertyId: property._id,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        alert(data.message || "Unable to open conversation.");
+        return;
+      }
+
+      const conversationId = data.data?._id;
+
+      if (!conversationId) {
+        alert("Conversation could not be opened.");
+        return;
+      }
+
+      window.location.href = `/client/messages/${conversationId}`;
+    } catch (error) {
+      console.error("Failed to open conversation:", error);
+
+      alert("Unable to connect with the agent. Please try again.");
+    }
+  }
+
   return (
     <div className="property-card client-property-card">
+      {/* ======================================================
+          PROPERTY IMAGE
+          ====================================================== */}
+
       <div className="property-image">
         <img src={image} alt={property.title || "Property"} />
 
@@ -37,6 +90,10 @@ export default function ClientPropertyCard({
         </button>
       </div>
 
+      {/* ======================================================
+          PROPERTY CONTENT
+          ====================================================== */}
+
       <div className="property-card-content">
         <h2>{property.title || "Untitled Property"}</h2>
 
@@ -52,6 +109,10 @@ export default function ClientPropertyCard({
         <p>
           <strong>Location:</strong> {city}
         </p>
+
+        {/* ====================================================
+            PROPERTY INFORMATION
+            ==================================================== */}
 
         <div className="property-info">
           <span>
@@ -70,10 +131,37 @@ export default function ClientPropertyCard({
           </span>
         </div>
 
-        <div className="property-actions">
-          <Link href={`/client/properties/${property._id}`}>
-            <button className="view-btn">View Property</button>
+        {/* ====================================================
+            CLIENT ACTIONS
+            ==================================================== */}
+
+        <div className="property-actions client-card-actions">
+          <Link
+            href={`/client/properties/${property._id}`}
+            className="client-view-property-btn"
+          >
+            View Property
           </Link>
+
+          {property.assignedAgent ? (
+            <button
+              type="button"
+              className="client-message-agent-btn"
+              onClick={handleMessageAgent}
+            >
+              <FaComments />
+              Message Agent
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="client-message-agent-btn disabled"
+              disabled
+            >
+              <FaComments />
+              Agent Not Assigned
+            </button>
+          )}
         </div>
       </div>
     </div>

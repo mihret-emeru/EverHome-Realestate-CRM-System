@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import ClientPropertyCard from "@/components/client/ClientPropertyCard";
+import "@/styles/client/favorites.css";
 
 export default function ClientFavoritesPage() {
   const [favorites, setFavorites] = useState([]);

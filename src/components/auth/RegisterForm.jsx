@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import CustomDropdown from "@/components/common/CustomDropdown";
 import {
   FaUser,
   FaEnvelope,
@@ -12,34 +13,24 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 
-export default function RegisterForm() {
+export default function RegisterForm({ propertyId, conversion, returnTo }) {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [formData, setFormData] = useState({
     name: "",
-
     email: "",
-
     phone: "",
-
     password: "",
-
     confirmPassword: "",
-
     city: "",
-
     preferredPropertyType: "",
-
     minBudget: "",
-
     maxBudget: "",
-
     currency: "ETB",
   });
 
   const [error, setError] = useState("");
-
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
@@ -47,9 +38,22 @@ export default function RegisterForm() {
 
     setFormData({
       ...formData,
-
       [name]: value,
     });
+  };
+
+  const handlePropertyTypeChange = (value) => {
+    setFormData((current) => ({
+      ...current,
+      preferredPropertyType: value,
+    }));
+  };
+
+  const handleCurrencyChange = (value) => {
+    setFormData((current) => ({
+      ...current,
+      currency: value,
+    }));
   };
 
   const handleRegister = async (e) => {
@@ -94,6 +98,21 @@ export default function RegisterForm() {
       }
 
       alert("Account created successfully!");
+
+      if (propertyId && conversion) {
+        const loginParams = new URLSearchParams();
+
+        loginParams.set("propertyId", propertyId);
+        loginParams.set("conversion", conversion);
+
+        if (returnTo) {
+          loginParams.set("returnTo", returnTo);
+        }
+
+        window.location.href = `/login?${loginParams.toString()}`;
+        return;
+      }
+      window.location.href = "/login";
     } catch (error) {
       setError("Something went wrong. Please try again.");
     } finally {
@@ -101,31 +120,40 @@ export default function RegisterForm() {
     }
   };
 
+  const loginHref =
+    propertyId && conversion
+      ? `/login?propertyId=${encodeURIComponent(
+          propertyId,
+        )}&conversion=${encodeURIComponent(
+          conversion,
+        )}&returnTo=${encodeURIComponent(returnTo || "")}`
+      : "/login";
+
   return (
     <div className="register-card">
       <Image
-        src="/images/logo.png"
+        src="/images/logo.jpg"
         alt="Real Estate CRM"
-        width={55}
-        height={55}
+        width={80}
+        height={80}
         className="register-logo"
       />
 
       <h1>Create Account</h1>
 
       <p>Create your client account to access the Real Estate CRM.</p>
+
       {error && <div className="login-error">{error}</div>}
 
       <form onSubmit={handleRegister}>
         <div className="register-grid">
-          {/* LEFT */}
-
           <div>
             <div className="register-field">
               <label>Full Name</label>
 
               <div className="register-input">
                 <FaUser />
+
                 <input
                   type="text"
                   name="name"
@@ -206,8 +234,6 @@ export default function RegisterForm() {
             </div>
           </div>
 
-          {/* RIGHT */}
-
           <div>
             <div className="register-field">
               <label>Email</label>
@@ -242,26 +268,19 @@ export default function RegisterForm() {
               <label>Preferred Property Type</label>
 
               <div className="register-input">
-                <select
-                  className="property-select"
-                  name="preferredPropertyType"
+                <CustomDropdown
                   value={formData.preferredPropertyType}
-                  onChange={handleChange}
-                >
-                  <option value="">Select Property Type</option>
-
-                  <option value="house">House</option>
-
-                  <option value="apartment">Apartment</option>
-
-                  <option value="villa">Villa</option>
-
-                  <option value="land">Land</option>
-
-                  <option value="commercial">Commercial</option>
-
-                  <option value="other">Other</option>
-                </select>
+                  onChange={handlePropertyTypeChange}
+                  placeholder="Select Property Type"
+                  options={[
+                    { value: "house", label: "House" },
+                    { value: "apartment", label: "Apartment" },
+                    { value: "villa", label: "Villa" },
+                    { value: "land", label: "Land" },
+                    { value: "commercial", label: "Commercial" },
+                    { value: "other", label: "Other" },
+                  ]}
+                />
               </div>
             </div>
 
@@ -269,15 +288,15 @@ export default function RegisterForm() {
               <label>Currency</label>
 
               <div className="register-input">
-                <select
-                  className="property-select"
-                  name="currency"
+                <CustomDropdown
                   value={formData.currency}
-                  onChange={handleChange}
-                >
-                  <option>ETB</option>
-                  <option>USD</option>
-                </select>
+                  onChange={handleCurrencyChange}
+                  placeholder="Select Currency"
+                  options={[
+                    { value: "ETB", label: "ETB" },
+                    { value: "USD", label: "USD" },
+                  ]}
+                />
               </div>
             </div>
 
@@ -303,12 +322,13 @@ export default function RegisterForm() {
           <span>I agree to the Terms & Conditions</span>
         </div>
 
-        <button type="submit" className="login-submit" disabled={loading}>
+        <button type="submit" className="register-button" disabled={loading}>
           {loading ? "Creating Account..." : "Create Account"}
         </button>
+
         <div className="register-footer">
           Already have an account?
-          <Link href="/login">Login</Link>
+          <Link href={loginHref}>Login</Link>
         </div>
       </form>
     </div>

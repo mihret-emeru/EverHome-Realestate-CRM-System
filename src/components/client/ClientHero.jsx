@@ -33,53 +33,39 @@ export default function ClientHero() {
         </p>
       </div>
 
-      <form className="client-property-search" onSubmit={handleSearch}>
-        {/* Search */}
-        <div className="client-search-input">
-          <FaSearch />
+      {/* Location */}
+      <div className="client-location">
+        <FaMapMarkerAlt />
 
-          <input
-            type="text"
-            placeholder="Search properties or locations..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+        <span>Addis Ababa</span>
+      </div>
 
-        {/* Location */}
-        <div className="client-location">
-          <FaMapMarkerAlt />
+      {/* Property Type */}
+      <div className="client-type-dropdown">
+        <CustomDropdown
+          value={propertyType}
+          onChange={setPropertyType}
+          options={[
+            {
+              value: "all",
+              label: "All Types",
+            },
 
-          <span>Addis Ababa</span>
-        </div>
-
-        {/* Property Type */}
-        <div className="client-type-dropdown">
-          <CustomDropdown
-            value={propertyType}
-            onChange={setPropertyType}
-            options={[
-              {
-                value: "all",
-                label: "All Types",
-              },
-
-              {
-                value: "villa",
-                label: "Villa",
-              },
-              {
-                value: "apartment",
-                label: "Apartment",
-              },
-              {
-                value: "commercial",
-                label: "Commercial",
-              },
-            ]}
-          />
-        </div>
-      </form>
+            {
+              value: "villa",
+              label: "Villa",
+            },
+            {
+              value: "apartment",
+              label: "Apartment",
+            },
+            {
+              value: "commercial",
+              label: "Commercial",
+            },
+          ]}
+        />
+      </div>
     </section>
   );
 }

@@ -1,4 +1,5 @@
 "use client";
+
 import {
   FaPlusCircle,
   FaExchangeAlt,
@@ -6,6 +7,7 @@ import {
   FaPhone,
   FaEnvelope,
   FaCalendarCheck,
+  FaHome,
 } from "react-icons/fa";
 
 export default function LeadTimeline({ activities }) {
@@ -16,33 +18,40 @@ export default function LeadTimeline({ activities }) {
   const activityIcons = {
     created: <FaPlusCircle />,
     status_change: <FaExchangeAlt />,
+    property_interest: <FaHome />,
     note: <FaStickyNote />,
     call: <FaPhone />,
     email: <FaEnvelope />,
     meeting: <FaCalendarCheck />,
   };
 
+  const activityTitles = {
+    created: "Lead Created",
+    status_change: "Status Changed",
+    property_interest: "Property Interest",
+    note: "Notes Updated",
+    call: "Phone Call",
+    meeting: "Meeting",
+    email: "Email",
+  };
+
   return (
     <div className="lead-timeline">
       {activities.map((activity, index) => (
-        <div key={index} className="timeline-item">
+        <div
+          key={`${activity.createdAt}-${activity.type}-${index}`}
+          className="timeline-item"
+        >
           <div className={`timeline-icon ${activity.type}`}>
             {activityIcons[activity.type]}
           </div>
 
           <div className="timeline-content">
             <h4>
-              {activity.type === "created" && "Lead Created"}
-
-              {activity.type === "status_change" && "Status Changed"}
-
-              {activity.type === "note" && "Notes Updated"}
-
-              {activity.type === "call" && "Phone Call"}
-
-              {activity.type === "meeting" && "Meeting"}
-
-              {activity.type === "email" && "Email"}
+              {activityTitles[activity.type] ||
+                activity.type
+                  ?.replaceAll("_", " ")
+                  .replace(/\b\w/g, (character) => character.toUpperCase())}
             </h4>
 
             {activity.type !== "note" && (
@@ -53,13 +62,11 @@ export default function LeadTimeline({ activities }) {
               <div className="note-history">
                 <div>
                   <strong>Previous:</strong>
-
                   <p>{activity.oldValue || "No previous notes"}</p>
                 </div>
 
                 <div>
                   <strong>New:</strong>
-
                   <p>{activity.newValue || "No new notes"}</p>
                 </div>
               </div>

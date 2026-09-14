@@ -22,16 +22,12 @@ export default function Sidebar() {
       {/* Logo */}
       <div className="sidebar-header">
         <Image
-          src="/images/logo.png"
+          src="/images/logo.jpg"
           alt="Real Estate CRM"
-          width={42}
-          height={42}
+          width={250}
+          height={290}
           className="sidebar-logo"
         />
-
-        <div className="sidebar-title">
-          <h2>Real Estate CRM</h2>
-        </div>
       </div>
 
       {/* Menu */}

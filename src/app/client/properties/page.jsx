@@ -6,18 +6,31 @@ import Link from "next/link";
 import "@/styles/property.css";
 
 import "@/styles/client/properties.css";
+import CustomDropdown from "@/components/common/CustomDropdown";
 
-import { FaBed, FaBath, FaRulerCombined, FaHeart } from "react-icons/fa";
+import {
+  FaBed,
+  FaBath,
+  FaRulerCombined,
+  FaHeart,
+  FaComments,
+} from "react-icons/fa";
 
 export default function ClientPropertiesPage() {
   const [properties, setProperties] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  const [searching, setSearching] = useState(false);
 
   const [savedPropertyIds, setSavedPropertyIds] = useState([]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const propertiesPerPage = 10;
 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const [statusFilter, setStatusFilter] = useState("all");
   const [pagination, setPagination] = useState({
     page: 1,
     limit: 10,
@@ -38,37 +51,66 @@ export default function ClientPropertiesPage() {
    * sold
    */
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(searchTerm.trim());
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  useEffect(() => {
     async function fetchProperties() {
       try {
-        setLoading(true);
+        // Only show the full loading state on the first load.
+        if (properties.length === 0 && !searchQuery && statusFilter === "all") {
+          setLoading(true);
+        } else {
+          setSearching(true);
+        }
 
-        const response = await fetch(
-          `/api/properties?page=${currentPage}&limit=${propertiesPerPage}`,
-        );
+        const params = new URLSearchParams({
+          page: currentPage,
+          limit: propertiesPerPage,
+        });
+
+        if (statusFilter !== "all") {
+          params.append("status", statusFilter);
+        }
+
+        if (searchQuery) {
+          params.append("search", searchQuery);
+        }
+
+        const response = await fetch(`/api/properties?${params.toString()}`, {
+          cache: "no-store",
+        });
 
         const data = await response.json();
 
-        if (data.success) {
-          setProperties(data.data || []);
-
-          setPagination(
-            data.pagination || {
-              page: currentPage,
-              limit: propertiesPerPage,
-              total: data.data?.length || 0,
-              totalPages: 1,
-            },
-          );
+        if (!response.ok || !data.success) {
+          throw new Error(data.message || "Failed to fetch properties.");
         }
+
+        setProperties(data.data || []);
+
+        setPagination(
+          data.pagination || {
+            page: currentPage,
+            limit: propertiesPerPage,
+            total: data.data?.length || 0,
+            totalPages: 1,
+          },
+        );
       } catch (error) {
         console.error("Failed to fetch properties:", error);
       } finally {
         setLoading(false);
+        setSearching(false);
       }
     }
 
     fetchProperties();
-  }, [currentPage]);
+  }, [currentPage, statusFilter, searchQuery]);
 
   /*
    * ==========================================
@@ -139,6 +181,45 @@ export default function ClientPropertiesPage() {
     }
   }
 
+  async function handleMessageAgent(propertyId) {
+    try {
+      const response = await fetch("/api/client/conversations", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          propertyId,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        alert(data.message || "Unable to open conversation.");
+        return;
+      }
+
+      const conversationId = data.data?._id;
+
+      if (!conversationId) {
+        alert("Conversation could not be opened.");
+        return;
+      }
+
+      window.location.href = `/client/messages/${conversationId}`;
+    } catch (error) {
+      console.error("Failed to open conversation:", error);
+
+      alert("Unable to connect with the agent. Please try again.");
+    }
+  }
+
+  function handleStatusChange(value) {
+    setStatusFilter(value);
+    setCurrentPage(1);
+  }
+
   if (loading) {
     return <div className="property-loading">Loading properties...</div>;
   }
@@ -156,6 +237,38 @@ export default function ClientPropertiesPage() {
         </div>
       </div>
 
+      {/* ==========================================
+    SEARCH & FILTER
+    ========================================== */}
+
+      <div className="client-properties-toolbar">
+        {/* SEARCH */}
+
+        {/* STATUS FILTER */}
+
+        <CustomDropdown
+          value={statusFilter}
+          onChange={handleStatusChange}
+          options={[
+            {
+              value: "all",
+              label: "All Properties",
+            },
+            {
+              value: "available",
+              label: "Available",
+            },
+            {
+              value: "reserved",
+              label: "Reserved",
+            },
+            {
+              value: "sold",
+              label: "Sold",
+            },
+          ]}
+        />
+      </div>
       {/* ==========================================
           PROPERTY LIST
           ========================================== */}
@@ -243,19 +356,32 @@ export default function ClientPropertiesPage() {
 
                   {/* CLIENT ACTIONS */}
                   <div className="client-property-actions">
-                    <Link href={`/client/properties/${property._id}`}>
-                      <button className="client-view-property-btn">
-                        View Property
-                      </button>
+                    <Link
+                      href={`/client/properties/${property._id}`}
+                      className="client-view-property-btn"
+                    >
+                      View Property
                     </Link>
 
-                    <button
-                      className="client-save-property-btn"
-                      onClick={() => handleSave(property._id)}
-                    >
-                      <FaHeart />
-                      Save
-                    </button>
+                    {property.assignedAgent ? (
+                      <button
+                        type="button"
+                        className="client-message-agent-btn"
+                        onClick={() => handleMessageAgent(property._id)}
+                      >
+                        <FaComments />
+                        Message Agent
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        className="client-message-agent-btn disabled"
+                        disabled
+                      >
+                        <FaComments />
+                        Agent Not Assigned
+                      </button>
+                    )}
                   </div>
                 </div>
               );

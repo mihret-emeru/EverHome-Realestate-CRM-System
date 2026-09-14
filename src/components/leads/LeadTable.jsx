@@ -6,7 +6,11 @@ import LeadScoreBadge from "./LeadScoreBadge";
 import LeadActions from "./LeadActions";
 import { formatLeadSource } from "@/utils/leadFormat";
 
-export default function LeadTable({ leads = [], onDelete }) {
+export default function LeadTable({
+  leads = [],
+  onDelete,
+  actionsComponent: ActionsComponent = LeadActions,
+}) {
   const [page, setPage] = useState(1);
 
   const limit = 10;
@@ -14,7 +18,6 @@ export default function LeadTable({ leads = [], onDelete }) {
   const totalPages = Math.ceil(leads.length / limit);
 
   useEffect(() => {
-    // Reset to first page when the leads list changes
     setPage(1);
   }, [leads]);
 
@@ -26,8 +29,6 @@ export default function LeadTable({ leads = [], onDelete }) {
   function handleDelete(id) {
     onDelete?.(id);
 
-    // If deleting the last item on the current page,
-    // move back one page.
     if (currentLeads.length === 1 && page > 1) {
       setPage((currentPage) => currentPage - 1);
     }
@@ -75,7 +76,7 @@ export default function LeadTable({ leads = [], onDelete }) {
                 </td>
 
                 <td>
-                  <LeadActions leadId={lead._id} onDelete={handleDelete} />
+                  <ActionsComponent leadId={lead._id} onDelete={handleDelete} />
                 </td>
               </tr>
             ))

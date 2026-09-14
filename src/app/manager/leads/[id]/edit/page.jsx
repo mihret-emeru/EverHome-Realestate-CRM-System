@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import LeadForm from "@/components/leads/LeadForm";
+import Link from "next/link";
 
 export default function EditLeadPage() {
   const { id } = useParams();
@@ -61,6 +62,9 @@ export default function EditLeadPage() {
   return (
     <div className="edit-lead-page">
       <div className="page-title">
+        <Link href="/manager/leads" className="edit-lead-back-link">
+          ← Back to Leads
+        </Link>
         <h1>Edit Lead</h1>
         <p>Update lead information</p>
       </div>

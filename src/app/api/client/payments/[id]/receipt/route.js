@@ -5,6 +5,8 @@ import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/mongodb";
 import Payment from "@/models/Payment";
 
+import { createNotification } from "@/utils/createNotification";
+
 export async function POST(request, { params }) {
   try {
     await connectDB();
@@ -179,6 +181,19 @@ export async function POST(request, { params }) {
     payment.verificationNotes = "";
 
     await payment.save();
+
+    await createNotification({
+      recipient: payment.client,
+      type: "payment_receipt_submitted",
+      title: "Receipt Submitted",
+      message: `Your receipt for installment #${payment.installmentNumber} has been submitted and is waiting for verification.`,
+      link: `/client/payments/${payment._id}`,
+      metadata: {
+        paymentId: payment._id,
+        propertyId: payment.property?._id || payment.property,
+        installmentNumber: payment.installmentNumber,
+      },
+    });
 
     // ==========================================
     // Response
