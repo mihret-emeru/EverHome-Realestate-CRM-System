@@ -1,17 +1,17 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import AuthLayout from "@/components/auth/AuthLayout";
 import AuthImage from "@/components/auth/AuthImage";
 import LoginForm from "@/components/auth/LoginForm";
 import AuthFooter from "@/components/auth/AuthFooter";
 
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
 
   const propertyId = searchParams.get("propertyId");
   const conversion = searchParams.get("conversion");
-
   const returnTo = searchParams.get("returnTo") || "";
 
   return (
@@ -30,12 +30,22 @@ export default function LoginPage() {
             linkText="Create Account"
             href={
               propertyId
-                ? `/register?propertyId=${propertyId}&conversion=${conversion}&returnTo=${encodeURIComponent(returnTo)}`
+                ? `/register?propertyId=${propertyId}&conversion=${conversion}&returnTo=${encodeURIComponent(
+                    returnTo,
+                  )}`
                 : "/register"
             }
           />
         </div>
       }
     />
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={null}>
+      <LoginContent />
+    </Suspense>
   );
 }
